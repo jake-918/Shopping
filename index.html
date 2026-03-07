@@ -332,7 +332,7 @@
   .btn-toggle-total.excluded:hover { background: rgba(255,255,255,0.1); color: var(--muted2); }
 
   .bottom-confirm-bar {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 8px;
     background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
     border-radius: 12px; padding: 10px 14px;
   }
@@ -361,6 +361,44 @@
   .action-btn-export:hover { color: #93c5fd; }
   .action-btn-import { color: #c084fc; }
   .action-btn-import:hover { color: #d8b4fe; }
+
+  .oz-symbol { color: #7a7f99; }
+  .oz-input  { width: 46px; }
+  .ppo-display {
+    font-size: 0.68rem; font-weight: 800; color: #7a7f99;
+    white-space: nowrap; flex-shrink: 0; min-width: 52px; text-align: right;
+    letter-spacing: -0.2px;
+  }
+  .item.checked .oz-input  { opacity: 0.25; }
+  .item.checked .ppo-display { opacity: 0.25; }
+
+  /* Qty control */
+  .qty-wrap {
+    display: flex; align-items: center; gap: 3px; flex-shrink: 0;
+  }
+  .qty-btn {
+    width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--input-border);
+    background: var(--input-bg); color: var(--muted2);
+    font-size: 0.85rem; font-weight: 900; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.15s, color 0.15s;
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, sans-serif;
+  }
+  .qty-btn:hover  { background: #2d3250; color: var(--text); }
+  .qty-btn:active { background: #353a60; }
+  .qty-num {
+    font-size: 0.78rem; font-weight: 900; color: var(--text);
+    min-width: 16px; text-align: center; flex-shrink: 0;
+  }
+  .item.checked .qty-wrap { opacity: 0.25; }
+
+  /* Total cost multiplied — sits under the unit cost field */
+  .cost-col { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 2px; }
+  .total-cost-display {
+    font-size: 0.68rem; font-weight: 800; color: #fb923c;
+    white-space: nowrap; text-align: right;
+  }
+  .item.checked .total-cost-display { opacity: 0.25; }
 </style>
 </head>
 <body>
@@ -416,10 +454,19 @@
     <div id="export-feedback" style="display:none;text-align:center;font-size:0.78rem;font-weight:700;color:#4ade80;padding:4px 0;">✓ Data exported!</div>
     <div id="import-feedback" style="display:none;text-align:center;font-size:0.78rem;font-weight:700;padding:4px 0;"></div>
   </div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:8px;">
+    <span id="version-footer" style="font-size:0.68rem;font-weight:700;color:#2a2d3e;letter-spacing:0.5px;"></span>
+  </div>
 </div>
 
 <script>
 const NJ_TAX = 0.06625;
+const VERSION = "1.2.0";
+// Set version footer
+document.addEventListener('DOMContentLoaded', () => {
+  const vf = document.getElementById('version-footer');
+  if (vf) vf.textContent = 'v' + VERSION;
+});
 
 // Accent colors for stores — cycle through palette for new ones
 const ACCENT_COLORS = ['#4ade80','#f87171','#fb923c','#60a5fa','#c084fc','#facc15','#34d399','#f472b6','#38bdf8','#a78bfa'];
@@ -504,6 +551,8 @@ let collapsedStores  = loadJ('shopCollapsedStores',  {});
 let collapsedSubcats = loadJ('shopCollapsedSubcats', {});
 let nextStoreIdx     = loadJ('shopNextStoreIdx',     stores.length);
 let excludedStores   = loadJ('shopExcludedStores',  {});
+let ozs              = loadJ('shopOzs',             {});
+let qtys             = loadJ('shopQtys',            {});
 
 function save() {
   _ls.setItem('shopStores',          JSON.stringify(stores));
@@ -513,6 +562,8 @@ function save() {
   _ls.setItem('shopCollapsedSubcats',JSON.stringify(collapsedSubcats));
   _ls.setItem('shopNextStoreIdx',    JSON.stringify(nextStoreIdx));
   _ls.setItem('shopExcludedStores',   JSON.stringify(excludedStores));
+  _ls.setItem('shopOzs',              JSON.stringify(ozs));
+  _ls.setItem('shopQtys',             JSON.stringify(qtys));
 }
 
 // ── Key helpers ────────────────────────────────────────────────────────────
@@ -526,7 +577,7 @@ function storeSubtotal(store) {
   let t = 0;
   store.subcats.forEach(sc => sc.items.forEach(it => {
     const key = ik(store.id, sc.name, it);
-    if (!checked[key]) { const v = parseFloat(costs[key]); if (!isNaN(v) && v > 0) t += v; }
+    if (!checked[key]) { const v = parseFloat(costs[key]); if (!isNaN(v) && v > 0) { const q = qtys[key] || 1; t += v * q; } }
   }));
   return t;
 }
@@ -592,6 +643,8 @@ function doDeleteStore(storeId) {
   stores = stores.filter(s => s.id !== storeId);
   Object.keys(checked).forEach(k => { if (k.startsWith(storeId + '||')) delete checked[k]; });
   Object.keys(costs).forEach(k =>   { if (k.startsWith(storeId + '||')) delete costs[k]; });
+  Object.keys(ozs).forEach(k =>     { if (k.startsWith(storeId + '||')) delete ozs[k]; });
+  Object.keys(qtys).forEach(k =>    { if (k.startsWith(storeId + '||')) delete qtys[k]; });
   save(); render();
 }
 
@@ -634,6 +687,8 @@ function doDeleteSubcat(storeId, scName) {
   store.subcats = store.subcats.filter(sc => sc.name !== scName);
   Object.keys(checked).forEach(k => { if (k.startsWith(scKey(storeId,scName)+'||')) delete checked[k]; });
   Object.keys(costs).forEach(k =>   { if (k.startsWith(scKey(storeId,scName)+'||')) delete costs[k]; });
+  Object.keys(ozs).forEach(k =>     { if (k.startsWith(scKey(storeId,scName)+'||')) delete ozs[k]; });
+  Object.keys(qtys).forEach(k =>    { if (k.startsWith(scKey(storeId,scName)+'||')) delete qtys[k]; });
   save(); render();
 }
 
@@ -677,7 +732,7 @@ function deleteItem(storeId, scName, itemName) {
   if (!sc) return;
   sc.items = sc.items.filter(i => i !== itemName);
   const key = ik(storeId, scName, itemName);
-  delete checked[key]; delete costs[key];
+  delete checked[key]; delete costs[key]; delete ozs[key]; delete qtys[key];
   save(); render();
 }
 
@@ -731,12 +786,84 @@ function toggleSubcat(storeId, scName) {
   if (el) el.classList.toggle('collapsed');
 }
 
+function updateOz(input) {
+  const key = input.dataset.key;
+  const num = parseFloat(input.value);
+  if (input.value.trim() === '' || isNaN(num) || num <= 0) delete ozs[key];
+  else ozs[key] = num;
+  save();
+  // Update price-per-oz display
+  const ppoEl = document.getElementById('ppo-' + safeId(key));
+  if (ppoEl) {
+    const cost = costs[key];
+    const oz   = ozs[key];
+    ppoEl.textContent = (cost > 0 && oz > 0) ? '$' + (cost / oz).toFixed(2) + '/oz' : '';
+  }
+  // Update total cost display
+  const totalCostEl2 = document.getElementById('total-cost-' + safeId(key));
+  if (totalCostEl2) {
+    const cost2 = costs[key];
+    const qty2  = qtys[key] || 1;
+    if (cost2 > 0 && qty2 > 1) {
+      totalCostEl2.innerHTML = '<span style="color:#5a5f7a;font-weight:700">Total:</span> $' + (cost2 * qty2).toFixed(2);
+      totalCostEl2.style.display = '';
+    } else {
+      totalCostEl2.textContent = '';
+      totalCostEl2.style.display = 'none';
+    }
+  }
+}
+
+function updateQty(key, delta) {
+  const current = qtys[key] || 1;
+  const next = Math.max(1, current + delta);
+  if (next === 1) delete qtys[key];
+  else qtys[key] = next;
+  save();
+  // Update qty display
+  const numEl = document.getElementById('qty-num-' + safeId(key));
+  if (numEl) numEl.textContent = next;
+  // Update total cost display
+  const cost = costs[key];
+  const totalCostEl = document.getElementById('total-cost-' + safeId(key));
+  if (totalCostEl) {
+    if (cost > 0 && next > 1) {
+      totalCostEl.innerHTML = '<span style="color:#5a5f7a;font-weight:700">Total:</span> $' + (cost * next).toFixed(2);
+      totalCostEl.style.display = '';
+    } else {
+      totalCostEl.textContent = '';
+      totalCostEl.style.display = 'none';
+    }
+  }
+  updateTotals();
+}
+
 function updateCost(input) {
   const key = input.dataset.key;
   const num = parseFloat(input.value);
   if (input.value.trim() === '' || isNaN(num)) delete costs[key];
   else costs[key] = num;
   save(); updateTotals();
+  // Update price-per-oz display
+  const ppoEl = document.getElementById('ppo-' + safeId(key));
+  if (ppoEl) {
+    const cost = costs[key];
+    const oz   = ozs[key];
+    ppoEl.textContent = (cost > 0 && oz > 0) ? '$' + (cost / oz).toFixed(2) + '/oz' : '';
+  }
+  // Update total cost display
+  const totalCostEl2 = document.getElementById('total-cost-' + safeId(key));
+  if (totalCostEl2) {
+    const cost2 = costs[key];
+    const qty2  = qtys[key] || 1;
+    if (cost2 > 0 && qty2 > 1) {
+      totalCostEl2.innerHTML = '<span style="color:#5a5f7a;font-weight:700">Total:</span> $' + (cost2 * qty2).toFixed(2);
+      totalCostEl2.style.display = '';
+    } else {
+      totalCostEl2.textContent = '';
+      totalCostEl2.style.display = 'none';
+    }
+  }
 }
 
 function askResetAll()   { showConfirm('confirm-checks', 'confirm-costs'); }
@@ -758,7 +885,7 @@ function exportData() {
   const data = {
     version: 1,
     exported: new Date().toISOString(),
-    stores, checked, costs, collapsedStores, collapsedSubcats, nextStoreIdx, excludedStores
+    stores, checked, costs, collapsedStores, collapsedSubcats, nextStoreIdx, excludedStores, ozs, qtys
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -789,6 +916,8 @@ function importData(input) {
       collapsedSubcats = data.collapsedSubcats || {};
       nextStoreIdx     = data.nextStoreIdx     || stores.length;
       excludedStores   = data.excludedStores   || {};
+      ozs              = data.ozs              || {};
+      qtys             = data.qtys             || {};
       save();
       render();
       if (fb) { fb.style.color = '#4ade80'; fb.textContent = '✓ Data imported successfully!'; fb.style.display = 'block'; setTimeout(() => fb.style.display = 'none', 3000); }
@@ -1010,7 +1139,6 @@ function render() {
         const key = ik(store.id, sc.name, it);
         const isChecked = !!checked[key];
         const costVal = costs[key] !== undefined ? costs[key] : '';
-
         const itemDiv = document.createElement('div');
         itemDiv.className = `item${isChecked ? ' checked' : ''}`;
         itemDiv.id = `item-${safeId(key)}`;
@@ -1023,6 +1151,10 @@ function render() {
         textSpan.className = 'item-text';
         textSpan.textContent = it;
         textSpan.onclick = () => toggleItem(store.id, sc.name, it);
+
+        const ozVal   = ozs[key]   !== undefined ? ozs[key]   : '';
+        const costVal2 = costs[key] !== undefined ? costs[key] : '';
+        const ppoVal = (costVal2 !== '' && ozVal !== '' && ozVal > 0) ? '$' + (costVal2 / ozVal).toFixed(2) + '/oz' : '';
 
         const costWrap = document.createElement('div');
         costWrap.className = 'cost-wrap';
@@ -1037,6 +1169,26 @@ function render() {
         costInp.addEventListener('input', () => updateCost(costInp));
         costWrap.appendChild(costSym); costWrap.appendChild(costInp);
 
+        // Oz input
+        const ozWrap = document.createElement('div');
+        ozWrap.className = 'cost-wrap';
+        const ozSym = document.createElement('span');
+        ozSym.className = 'cost-symbol oz-symbol'; ozSym.textContent = 'oz';
+        const ozInp = document.createElement('input');
+        ozInp.className = 'cost-input oz-input'; ozInp.type = 'number';
+        ozInp.min = '0'; ozInp.step = '0.1'; ozInp.placeholder = '0';
+        if (ozVal !== '') ozInp.value = ozVal;
+        ozInp.dataset.key = key;
+        ozInp.addEventListener('click', e => e.stopPropagation());
+        ozInp.addEventListener('input', () => updateOz(ozInp));
+        ozWrap.appendChild(ozSym); ozWrap.appendChild(ozInp);
+
+        // Price per oz display
+        const ppoSpan = document.createElement('span');
+        ppoSpan.className = 'ppo-display';
+        ppoSpan.id = 'ppo-' + safeId(key);
+        ppoSpan.textContent = ppoVal;
+
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'item-actions';
         const renameItemBtn = mkBtn('btn-rename', '✏️', e => { e.stopPropagation(); startItemRename(itemDiv, textSpan, actionsDiv, store.id, sc.name, it); });
@@ -1044,9 +1196,54 @@ function render() {
         actionsDiv.appendChild(renameItemBtn);
         actionsDiv.appendChild(deleteItemBtn);
 
+        // Qty control (− num +)
+        const qtyVal = qtys[key] || 1;
+        const qtyWrap = document.createElement('div');
+        qtyWrap.className = 'qty-wrap';
+        qtyWrap.addEventListener('click', e => e.stopPropagation());
+
+        const qtyMinus = document.createElement('button');
+        qtyMinus.className = 'qty-btn qty-minus';
+        qtyMinus.textContent = '−';
+        qtyMinus.onclick = e => { e.stopPropagation(); updateQty(key, -1); };
+
+        const qtyNum = document.createElement('span');
+        qtyNum.className = 'qty-num';
+        qtyNum.id = 'qty-num-' + safeId(key);
+        qtyNum.textContent = qtyVal;
+
+        const qtyPlus = document.createElement('button');
+        qtyPlus.className = 'qty-btn qty-plus';
+        qtyPlus.textContent = '+';
+        qtyPlus.onclick = e => { e.stopPropagation(); updateQty(key, +1); };
+
+        qtyWrap.appendChild(qtyMinus);
+        qtyWrap.appendChild(qtyNum);
+        qtyWrap.appendChild(qtyPlus);
+
+        // Total cost multiplied span (only shown when qty > 1)
+        const totalCostSpan = document.createElement('span');
+        totalCostSpan.className = 'total-cost-display';
+        totalCostSpan.id = 'total-cost-' + safeId(key);
+        const initCost = costs[key]; const initQty = qtys[key] || 1;
+        if (initCost > 0 && initQty > 1) {
+          totalCostSpan.innerHTML = '<span style="color:#5a5f7a;font-weight:700">Total:</span> $' + (initCost * initQty).toFixed(2);
+        } else {
+          totalCostSpan.style.display = 'none';
+        }
+
+        // Wrap cost + total into a column
+        const costCol = document.createElement('div');
+        costCol.className = 'cost-col';
+        costCol.appendChild(costWrap);
+        costCol.appendChild(totalCostSpan);
+
+        itemDiv.appendChild(qtyWrap);
         itemDiv.appendChild(checkDiv);
         itemDiv.appendChild(textSpan);
-        itemDiv.appendChild(costWrap);
+        itemDiv.appendChild(costCol);
+        itemDiv.appendChild(ozWrap);
+        itemDiv.appendChild(ppoSpan);
         itemDiv.appendChild(actionsDiv);
         scBody.appendChild(itemDiv);
       });
@@ -1109,7 +1306,7 @@ render();
   const splash = document.createElement('div');
   splash.id = 'pwa-splash';
   splash.style.cssText = 'position:fixed;inset:0;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s ease;pointer-events:none';
-  splash.innerHTML = '<div style="font-size:3.5rem;margin-bottom:16px">🛒</div><div style="font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#e8eaf0,#9ba3c4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;font-family:ui-rounded,-apple-system,sans-serif">Shopping List</div><div style="margin-top:10px;font-size:0.75rem;color:#5a5f7a;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:ui-rounded,-apple-system,sans-serif">Loading…</div>';
+  splash.innerHTML = `<div style="font-size:3.5rem;margin-bottom:16px">🛒</div><div style="font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#e8eaf0,#9ba3c4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;font-family:ui-rounded,-apple-system,sans-serif">Shopping List</div><div style="margin-top:10px;font-size:0.75rem;color:#5a5f7a;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:ui-rounded,-apple-system,sans-serif">Loading…</div><div style="margin-top:8px;font-size:0.7rem;color:#4a5080;font-weight:700;font-family:ui-rounded,-apple-system,sans-serif">v${VERSION}</div>`;
   document.body.appendChild(splash);
   // render() has already run so the app is ready underneath — just fade out
   setTimeout(() => {
