@@ -161,11 +161,13 @@
 
   /* Items */
   .item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px 7px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.035); transition: background 0.1s;
+    display: flex; flex-direction: column;
+    padding: 8px 12px 8px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.035); transition: background 0.1s; gap: 5px;
   }
   .item:last-child { border-bottom: none; }
+  .item-row1 { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .item-row2 { display: flex; align-items: center; gap: 6px; padding-left: 27px; }
 
   .item-check {
     width: 19px; height: 19px; border-radius: 5px; border: 2px solid #333755; flex-shrink: 0;
@@ -177,7 +179,8 @@
 
   .item-text {
     flex: 1; font-size: 0.87rem; font-weight: 600; line-height: 1.35;
-    cursor: pointer; color: var(--text); transition: opacity 0.15s; min-width: 0; word-break: break-word;
+    cursor: pointer; color: var(--text); transition: opacity 0.15s; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .item.checked .item-text { text-decoration: line-through; opacity: 0.3; }
 
@@ -201,6 +204,7 @@
   .cost-input:focus { border-color: #4a5080; background: #2d3250; }
   .cost-input::placeholder { color: var(--muted); font-weight: 600; }
   .item.checked .cost-input { opacity: 0.25; }
+  .item.checked .item-row2 { opacity: 0.3; }
 
   .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
@@ -369,8 +373,6 @@
     white-space: nowrap; flex-shrink: 0; min-width: 52px; text-align: right;
     letter-spacing: -0.2px;
   }
-  .item.checked .oz-input  { opacity: 0.25; }
-  .item.checked .ppo-display { opacity: 0.25; }
 
   /* Qty control */
   .qty-wrap {
@@ -390,7 +392,6 @@
     font-size: 0.78rem; font-weight: 900; color: var(--text);
     min-width: 16px; text-align: center; flex-shrink: 0;
   }
-  .item.checked .qty-wrap { opacity: 0.25; }
 
   /* Total cost multiplied — sits under the unit cost field */
   .cost-col { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 2px; }
@@ -398,7 +399,6 @@
     font-size: 0.68rem; font-weight: 800; color: #fb923c;
     white-space: nowrap; text-align: right;
   }
-  .item.checked .total-cost-display { opacity: 0.25; }
 </style>
 </head>
 <body>
@@ -461,7 +461,7 @@
 
 <script>
 const NJ_TAX = 0.06625;
-const VERSION = "1.2.0";
+const VERSION = "1.2.2";
 // Set version footer
 document.addEventListener('DOMContentLoaded', () => {
   const vf = document.getElementById('version-footer');
@@ -934,7 +934,8 @@ function startItemRename(itemDiv, textSpan, actionsDiv, storeId, scName, oldName
   const inp = document.createElement('input');
   inp.className = 'item-rename-input';
   inp.value = oldName;
-  itemDiv.replaceChild(inp, textSpan);
+  // textSpan is inside row1, so replace within its actual parent
+  textSpan.parentNode.replaceChild(inp, textSpan);
   inp.focus(); inp.select();
 
   actionsDiv.innerHTML = '';
@@ -1238,13 +1239,23 @@ function render() {
         costCol.appendChild(costWrap);
         costCol.appendChild(totalCostSpan);
 
-        itemDiv.appendChild(qtyWrap);
-        itemDiv.appendChild(checkDiv);
-        itemDiv.appendChild(textSpan);
-        itemDiv.appendChild(costCol);
-        itemDiv.appendChild(ozWrap);
-        itemDiv.appendChild(ppoSpan);
-        itemDiv.appendChild(actionsDiv);
+        // Row 1: checkbox + name + rename/delete actions
+        const row1 = document.createElement('div');
+        row1.className = 'item-row1';
+        row1.appendChild(checkDiv);
+        row1.appendChild(textSpan);
+        row1.appendChild(actionsDiv);
+
+        // Row 2: qty + cost + oz + ppo
+        const row2 = document.createElement('div');
+        row2.className = 'item-row2';
+        row2.appendChild(qtyWrap);
+        row2.appendChild(costCol);
+        row2.appendChild(ozWrap);
+        row2.appendChild(ppoSpan);
+
+        itemDiv.appendChild(row1);
+        itemDiv.appendChild(row2);
         scBody.appendChild(itemDiv);
       });
 
