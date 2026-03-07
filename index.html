@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shopping">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1117">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Shopping List</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAB8ElEQVR42u3dyw2DQAxF0ekgYkVPVJVKqYUGWEYZP/tIdx1Zw1HCZyLW5zil15YlEByCQ3AIDsEhOASH4BAcgkOCQ3AIDsEhOASH4BAcgkNwSHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkODcVz39885fnDAAQcccMABBxxwwAEHHHDAITgEh+AQHHD0xrHr0wSH4IADDjjggAMOOOCAAw444IADDjgEh+AQHI4fHHDAAQcccMABBxxbd4INDw7BITgEh+CAAw444IADDjjggAMOOOCAQ9E46IEDDjjggAMOOOCAAw444BAcgkNwOJxwwAEHHHDAAQcccMABBxxwwAEHHIJDcAgOOOCAAw444IADDjjggAMOOOCAQ3AIDsEBBxxwwAEHHHDAAQcccMABBxxwCA7BITjggAMOOOCAQ94rKzXAcWW+iDpx7JWysrt+dweOHYOjyKnZkLGTcJQ6dW8/dhKOgpd2jcdOwlH20r/l2HAYuwWO4vcNm40Nh7HhgAMOOIbiiHhc2WZs3xzGhgMOOOCAAw443CF1hxQOODze9FTWxgj7OWypshPMHlJj231ubP9bERyCQ3AIDsEhOASH4JDgEByCQ3AIDsEhOASH4BAcEhyCQ3AIDsEhOASH4BAcgkNwWAXBITj0sx7dfL6gMYhO/QAAAABJRU5ErkJggg==">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --card-bg: #1a1d27;
+    --subcat-bg: #161924;
+    --border: #2a2d3e;
+    --text: #e8eaf0;
+    --muted: #5a5f7a;
+    --muted2: #7a7f99;
+    --radius: 18px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --input-bg: #252940;
+    --input-border: #333755;
+  }
+
+  body {
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding: 16px 12px 60px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.018) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .content { position: relative; z-index: 1; }
+
+  h1 {
+    text-align: center; font-size: 1.7rem; font-weight: 900;
+    margin-bottom: 4px; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #e8eaf0 0%, #9ba3c4 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .subtitle { text-align: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; }
+
+  /* Grand total */
+  .grand-total-bar {
+    max-width: 500px; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #1e2130, #252940);
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px 18px;
+  }
+  .grand-total-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .grand-total-row:last-child { margin-bottom: 0; }
+  .grand-total-label { font-size: 0.78rem; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; }
+  .grand-total-amount { font-size: 1.25rem; font-weight: 900; color: #86efac; letter-spacing: -0.5px; }
+  .tax-row-label { font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+  .tax-row-amount { font-size: 0.88rem; font-weight: 800; color: var(--muted2); }
+  .total-with-tax-label { font-size: 0.78rem; font-weight: 800; color: #86efac; text-transform: uppercase; letter-spacing: 0.8px; }
+  .total-with-tax-amount { font-size: 1.05rem; font-weight: 900; color: #86efac; }
+  .grand-total-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
+
+  /* Store grid */
+  .stores-grid { display: flex; flex-direction: column; gap: 14px; max-width: 500px; margin: 0 auto; }
+
+  .store-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border);
+  }
+
+  /* Store header — normal mode */
+  .store-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 14px; cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .store-header:active { background: rgba(255,255,255,0.03); }
+  .store-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .store-name { font-size: 1rem; font-weight: 800; flex: 1; }
+  .store-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .store-count { font-size: 0.7rem; font-weight: 700; color: var(--muted2); background: rgba(255,255,255,0.06); border-radius: 20px; padding: 2px 8px; }
+  .store-subtotal { font-size: 0.82rem; font-weight: 900; color: #86efac; min-width: 48px; text-align: right; }
+  .store-chevron { font-size: 0.8rem; color: var(--muted); transition: transform 0.25s; flex-shrink: 0; }
+  .store-card.collapsed .store-chevron { transform: rotate(-90deg); }
+
+  /* Store header — edit mode */
+  .store-header-edit {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+  .store-icon-input {
+    width: 44px; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text); font-size: 1.1rem; text-align: center;
+    padding: 4px; outline: none; font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  .store-name-input {
+    flex: 1; background: var(--input-bg); border: 1px solid #4a5080;
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.95rem; font-weight: 700;
+    padding: 5px 10px; outline: none;
+  }
+
+  .store-body {
+    border-top: 1px solid var(--border); overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 99999px; opacity: 1;
+  }
+  .store-card.collapsed .store-body { max-height: 0; opacity: 0; border-top: none; }
+
+  .progress-bar-wrap { height: 2px; background: rgba(255,255,255,0.05); }
+  .progress-bar { height: 2px; transition: width 0.4s ease; border-radius: 2px; }
+
+  /* Per-store accent colors (dynamic via inline style) */
+
+  /* Subcategory */
+  .subcat { border-bottom: 1px solid var(--border); }
+  .subcat:last-child { border-bottom: none; }
+
+  .subcat-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px 8px 18px;
+    user-select: none; background: var(--subcat-bg); transition: background 0.15s;
+  }
+  .subcat-header-toggle {
+    flex: 1; display: flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .subcat-header:active { background: rgba(255,255,255,0.04); }
+  .subcat-name { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted2); }
+  .subcat-chevron { font-size: 0.65rem; color: var(--muted); transition: transform 0.2s; }
+  .subcat.collapsed .subcat-chevron { transform: rotate(-90deg); }
+
+  /* Subcat rename input (inline in header) */
+  .subcat-name-input {
+    flex: 1; background: var(--input-bg); border: 1px solid #4a5080;
+    border-radius: 6px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.75rem; font-weight: 800;
+    padding: 3px 8px; outline: none; text-transform: uppercase; letter-spacing: 0.6px;
+  }
+
+  .subcat-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.25s ease; max-height: 99999px; opacity: 1; }
+  .subcat.collapsed .subcat-body { max-height: 0; opacity: 0; }
+
+  /* Items */
+  .item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px 7px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.035); transition: background 0.1s;
+  }
+  .item:last-child { border-bottom: none; }
+
+  .item-check {
+    width: 19px; height: 19px; border-radius: 5px; border: 2px solid #333755; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  .item.checked .item-check { border-color: #4ade80; background: #4ade80; }
+  .item.checked .item-check::after { content: '✓'; color: #0f1117; font-size: 0.65rem; font-weight: 900; }
+
+  .item-text {
+    flex: 1; font-size: 0.87rem; font-weight: 600; line-height: 1.35;
+    cursor: pointer; color: var(--text); transition: opacity 0.15s; min-width: 0; word-break: break-word;
+  }
+  .item.checked .item-text { text-decoration: line-through; opacity: 0.3; }
+
+  .item-rename-input {
+    flex: 1; background: var(--input-bg); border: 1px solid #4a5080;
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.85rem; font-weight: 600;
+    padding: 4px 8px; outline: none; min-width: 0;
+  }
+
+  .cost-wrap { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+  .cost-symbol { font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+  .cost-input {
+    width: 56px; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.8rem; font-weight: 700;
+    padding: 4px 6px; text-align: right; outline: none;
+    transition: border-color 0.15s, background 0.15s; -moz-appearance: textfield;
+  }
+  .cost-input::-webkit-outer-spin-button, .cost-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .cost-input:focus { border-color: #4a5080; background: #2d3250; }
+  .cost-input::placeholder { color: var(--muted); font-weight: 600; }
+  .item.checked .cost-input { opacity: 0.25; }
+
+  .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  .btn-icon {
+    width: 26px; height: 26px; border-radius: 6px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.75rem; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-rename { background: rgba(96,165,250,0.12); color: #60a5fa; }
+  .btn-rename:hover { background: rgba(96,165,250,0.22); }
+  .btn-delete { background: rgba(248,113,113,0.12); color: #f87171; }
+  .btn-delete:hover { background: rgba(248,113,113,0.22); }
+  .btn-save   { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .btn-save:hover { background: rgba(74,222,128,0.25); }
+  .btn-cancel { background: rgba(255,255,255,0.06); color: var(--muted2); }
+  .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+
+  /* Add item row */
+  .add-item-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px 7px 20px;
+    border-top: 1px dashed rgba(255,255,255,0.07);
+  }
+  .add-item-input {
+    flex: 1; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.82rem; font-weight: 600;
+    padding: 5px 10px; outline: none; transition: border-color 0.15s;
+  }
+  .add-item-input:focus { border-color: #4a5080; }
+  .add-item-input::placeholder { color: var(--muted); }
+  .btn-add-confirm {
+    background: rgba(74,222,128,0.15); color: #4ade80; border: none; border-radius: 7px;
+    padding: 5px 12px; font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.78rem; font-weight: 800;
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }
+  .btn-add-confirm:hover { background: rgba(74,222,128,0.25); }
+
+  /* Add subcat row */
+  .add-subcat-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; background: rgba(255,255,255,0.015);
+    border-top: 1px dashed rgba(255,255,255,0.07);
+  }
+  .add-subcat-input {
+    flex: 1; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.78rem; font-weight: 700;
+    padding: 5px 10px; outline: none; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .add-subcat-input:focus { border-color: #4a5080; }
+  .add-subcat-input::placeholder { color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+  /* Store footer */
+  .store-footer {
+    padding: 11px 18px; background: rgba(255,255,255,0.02);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .store-footer-label { font-size: 0.76rem; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.7px; }
+  .store-footer-note  { font-size: 0.68rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .store-footer-amount { font-size: 1rem; font-weight: 900; color: #86efac; }
+
+  /* Add store card */
+  .add-store-card {
+    max-width: 500px; margin: 0 auto;
+    background: var(--card-bg); border: 1px dashed var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .add-store-icon-inp {
+    width: 44px; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text); font-size: 1.1rem; text-align: center;
+    padding: 5px; outline: none; font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  .add-store-name-inp {
+    flex: 1; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.9rem; font-weight: 700;
+    padding: 6px 10px; outline: none;
+  }
+  .add-store-name-inp:focus, .add-store-icon-inp:focus { border-color: #4a5080; }
+  .add-store-name-inp::placeholder { color: var(--muted); font-weight: 600; }
+
+  /* Bottom buttons */
+  .btn-row { display: flex; gap: 10px; max-width: 500px; margin: 16px auto 0; }
+  .action-btn {
+    flex: 1; background: #1e2130; color: var(--muted2);
+    border: 1px solid var(--border); border-radius: 12px; padding: 11px 16px;
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.83rem; font-weight: 800;
+    cursor: pointer; letter-spacing: 0.3px; transition: background 0.15s, color 0.15s;
+  }
+  .action-btn:hover { background: #252940; color: var(--text); }
+
+  /* Inline confirm bar */
+  .confirm-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: rgba(248,113,113,0.08);
+    border-bottom: 1px solid rgba(248,113,113,0.2);
+    flex-wrap: wrap;
+  }
+  .confirm-msg { font-size: 0.78rem; font-weight: 700; color: #f87171; flex: 1; }
+  .confirm-yes {
+    background: rgba(248,113,113,0.2); color: #f87171; border: 1px solid rgba(248,113,113,0.35);
+    border-radius: 7px; padding: 4px 12px;
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.75rem; font-weight: 800;
+    cursor: pointer; transition: background 0.15s; white-space: nowrap;
+  }
+  .confirm-yes:hover { background: rgba(248,113,113,0.35); }
+  .confirm-no {
+    background: rgba(255,255,255,0.05); color: var(--muted2); border: 1px solid var(--border);
+    border-radius: 7px; padding: 4px 12px;
+    font-family: 'Nunito', 'Varela Round', ui-rounded, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.75rem; font-weight: 800;
+    cursor: pointer; transition: background 0.15s; white-space: nowrap;
+  }
+  .confirm-no:hover { background: rgba(255,255,255,0.1); }
+
+  /* Store excluded from grand total */
+  .store-excluded { opacity: 0.55; }
+  .store-excluded .store-header { border-left-style: dashed !important; }
+
+  .btn-toggle-total {
+    background: rgba(74,222,128,0.12); color: #4ade80;
+    font-size: 0.7rem; width: 26px; height: 26px; border-radius: 6px; border: none;
+    cursor: pointer; flex-shrink: 0; transition: background 0.15s, color 0.15s;
+  }
+  .btn-toggle-total:hover { background: rgba(74,222,128,0.25); }
+  .btn-toggle-total.excluded { background: rgba(255,255,255,0.05); color: var(--muted); }
+  .btn-toggle-total.excluded:hover { background: rgba(255,255,255,0.1); color: var(--muted2); }
+
+  .bottom-confirm-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 12px; padding: 10px 14px;
+  }
+
+  /* iOS PWA — prevent overscroll bounce, callouts, selection on UI elements */
+  html {
+    height: 100%;
+  }
+  body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+  button, .item-check, .store-header, .subcat-header {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input {
+    -webkit-user-select: text;
+    user-select: text;
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+  }
+
+  .action-btn-export { color: #60a5fa; }
+  .action-btn-export:hover { color: #93c5fd; }
+  .action-btn-import { color: #c084fc; }
+  .action-btn-import:hover { color: #d8b4fe; }
+</style>
+</head>
+<body>
+<div class="content">
+  <h1>🛒 Shopping List</h1>
+  <p class="subtitle">Tap to check · ✏️ rename · 🗑 delete · + add anywhere</p>
+
+  <div class="grand-total-bar">
+    <div class="grand-total-row">
+      <span class="grand-total-label">🧾 Subtotal (unchecked)</span>
+      <span class="grand-total-amount" id="grandTotal">$0.00</span>
+    </div>
+    <hr class="grand-total-divider">
+    <div class="grand-total-row">
+      <span class="tax-row-label">NJ Sales Tax (6.625%)</span>
+      <span class="tax-row-amount" id="taxAmount">$0.00</span>
+    </div>
+    <div class="grand-total-row" style="margin-top:4px">
+      <span class="total-with-tax-label">✅ Total with Tax</span>
+      <span class="total-with-tax-amount" id="totalWithTax">$0.00</span>
+    </div>
+  </div>
+
+  <div class="stores-grid" id="storesGrid"></div>
+
+  <!-- Add new store -->
+  <div class="add-store-card" style="margin-top:14px" id="addStoreCard">
+    <input class="add-store-icon-inp" id="newStoreIcon" type="text" placeholder="🏪" maxlength="4">
+    <input class="add-store-name-inp" id="newStoreName" type="text" placeholder="Add a new store…">
+    <button class="btn-add-confirm" onclick="addStore()">Add Store</button>
+  </div>
+
+  <div style="max-width:500px;margin:16px auto 0;display:flex;flex-direction:column;gap:8px;">
+    <div id="confirm-checks" class="bottom-confirm-bar" style="display:none">
+      <span class="confirm-msg">Clear all checked items?</span>
+      <button class="confirm-yes" onclick="doResetAll()">Yes, clear</button>
+      <button class="confirm-no" onclick="hideConfirm('confirm-checks')">Cancel</button>
+    </div>
+    <div id="confirm-costs" class="bottom-confirm-bar" style="display:none">
+      <span class="confirm-msg">Clear all entered costs?</span>
+      <button class="confirm-yes" onclick="doResetCosts()">Yes, clear</button>
+      <button class="confirm-no" onclick="hideConfirm('confirm-costs')">Cancel</button>
+    </div>
+    <div class="btn-row">
+      <button class="action-btn" onclick="askResetAll()">↺ Reset Checks</button>
+      <button class="action-btn" onclick="askResetCosts()">$ Clear Costs</button>
+    </div>
+    <div class="btn-row">
+      <button class="action-btn action-btn-export" onclick="exportData()">⬆ Export Data</button>
+      <button class="action-btn action-btn-import" onclick="document.getElementById('importFile').click()">⬇ Import Data</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+    <div id="export-feedback" style="display:none;text-align:center;font-size:0.78rem;font-weight:700;color:#4ade80;padding:4px 0;">✓ Data exported!</div>
+    <div id="import-feedback" style="display:none;text-align:center;font-size:0.78rem;font-weight:700;padding:4px 0;"></div>
+  </div>
+</div>
+
+<script>
+const NJ_TAX = 0.06625;
+
+// Accent colors for stores — cycle through palette for new ones
+const ACCENT_COLORS = ['#4ade80','#f87171','#fb923c','#60a5fa','#c084fc','#facc15','#34d399','#f472b6','#38bdf8','#a78bfa'];
+
+const DEFAULT_STORES = [
+  { id:'grocery', name:'General Grocery', icon:'🏪', color:'#4ade80', subcats:[
+    { name:'Produce', items:['Bananas','Apples','Spinach / Mixed Greens','Broccoli','Bell Peppers','Onions','Garlic','Tomatoes','Lemons / Limes','Avocados','Cucumbers','Carrots','Celery','Potatoes','Sweet Potatoes'] },
+    { name:'Meat & Protein', items:['Chicken Breasts / Thighs','Ground Beef / Turkey','Salmon or Tilapia','Eggs (if not BJs)','Deli Meat','Bacon'] },
+    { name:'Dairy & Eggs', items:['Milk','Butter','Shredded Cheese','Cream Cheese','Sour Cream','Heavy Cream','Greek Yogurt'] },
+    { name:'Frozen', items:['Frozen Veggies (corn, peas, edamame)','Frozen Fruit','Pizza / Easy Meals','Frozen Waffles or Pancakes','Ice Cream / Popsicles'] },
+    { name:'Bread & Bakery', items:['Sandwich Bread','Hamburger / Hot Dog Buns','Tortillas (flour & corn)','English Muffins','Bagels'] },
+    { name:'Pasta / Rice / Grains', items:['Pasta (various shapes)','Rice (white & brown)','Quinoa','Oats / Oatmeal','Couscous or Farro'] },
+    { name:'Canned & Jarred', items:['Canned Tomatoes (diced, crushed)','Tomato Sauce / Pasta Sauce','Chicken or Vegetable Broth','Canned Beans (black, chickpea, kidney)','Canned Tuna / Salmon','Coconut Milk','Olives'] },
+    { name:'Condiments', items:['Ketchup','Mustard','Mayo','Soy Sauce / Tamari','Hot Sauce','BBQ Sauce','Salad Dressings','Olive Oil / Vegetable Oil','Balsamic Vinegar','Apple Cider Vinegar','Worcestershire Sauce','Honey / Maple Syrup'] },
+    { name:'Spices & Baking', items:['Salt & Pepper','Garlic Powder / Onion Powder','Cumin','Chili Powder','Paprika','Italian Seasoning','Cinnamon','Red Pepper Flakes','Flour','Sugar (white & brown)','Baking Powder / Baking Soda','Vanilla Extract','Chocolate Chips'] },
+    { name:'Snacks & Sweets', items:['Chips / Pretzels','Crackers','Popcorn','Granola Bars / Energy Bars','Nuts / Trail Mix','Fruit Snacks','Cookies / Snack Cakes'] },
+    { name:'Beverages', items:['Orange Juice','Apple Juice','Coffee / K-Cups','Tea','Sparkling Water','Sports Drinks / Gatorade'] },
+    { name:'Mexican Night 🌮', items:['Taco Shells (hard & soft)','Salsa','Guacamole or Avocados','Shredded Mexican Cheese Blend','Jalapeños','Taco Seasoning','Refried Beans','Lime','Cilantro','Sour Cream'] },
+    { name:'Household', items:['Paper Towels','Toilet Paper','Trash Bags','Dish Soap','Dishwasher Pods','Laundry Detergent','Dryer Sheets / Pods','All-Purpose Cleaner','Sponges / Scrubbers','Zip-lock Bags (various)','Aluminum Foil / Plastic Wrap','Parchment Paper'] },
+  ]},
+  { id:'bjs', name:"BJ's Wholesale", icon:'🏬', color:'#f87171', subcats:[
+    { name:'Meat & Poultry', items:['Chicken Breast (bulk)','Ground Beef (bulk)','Pork Tenderloin or Chops','Hot Dogs / Sausages','Shrimp (frozen, large bag)'] },
+    { name:'Dairy & Cheese', items:['Eggs (large 18–24 ct)','Butter (2 lb pack)','Shredded Mozzarella (large bag)','Parmesan (large container)','Cream Cheese (2-pack)','American Cheese Slices'] },
+    { name:'Frozen', items:['Frozen Chicken Nuggets or Tenders','Frozen Vegetables (large bags)','Frozen Fruit (large bag)','Frozen Breakfast Items'] },
+    { name:'Pantry & Sauces', items:['Olive Oil (large bottle)','Pasta (bulk pack)','Tomato Sauce / Marinara (multipack)','Chicken Broth (6-pack cartons)','Peanut Butter (2-pack)','Jelly / Jam (2-pack)','Cereal (2-pack)'] },
+    { name:'Snacks & Sweets', items:['Goldfish Crackers (large)','Granola Bars (variety box)','Mixed Nuts (large canister)','Popcorn (bulk)','Fruit Snacks (big box)','Pretzels (large bag)'] },
+    { name:'Beverages', items:['Water (24 or 40 ct)','Apple Juice Boxes (big box)','Sparkling Water (multipack)','Coffee (large bag/canister)','Juice (large jugs)'] },
+    { name:'Bread', items:['Sandwich Bread (2-loaf pack)','Bagels (bulk)','English Muffins (multipack)'] },
+    { name:'Household', items:['Paper Towels (bulk)','Toilet Paper (36 ct)','Trash Bags (bulk)','Dish Soap (2-pack)','Dishwasher Pods (large box)','Laundry Detergent (large)','Dryer Sheets (large box)','Ziploc Bags (variety pack)','Plastic Wrap / Foil (3-pack)'] },
+  ]},
+  { id:'aldi', name:'Aldi', icon:'🛒', color:'#fb923c', subcats:[
+    { name:'Produce', items:['Seasonal Fruits & Veggies','Bagged Salad','Packaged Mushrooms','Fresh Herbs'] },
+    { name:'Bread', items:['Whole Grain Bread','Brioche Buns','Croissants','Specialty Bread (seasonal)'] },
+    { name:'Pantry', items:['Canned Tomatoes','Pasta (various)','Rice','Olive Oil','Salsa','Simmer Sauces','Cereal','Maple Syrup','Dark Chocolate Bars'] },
+    { name:'Beverages', items:['Orange Juice','Sparkling Water','Wine (Aldi picks)','Cold Brew Coffee'] },
+  ]},
+  { id:'target', name:'Target', icon:'🎯', color:'#f87171', subcats:[
+    { name:'Skin & Sun Care', items:['Sunscreen (face & body)','Daily Moisturizer','Body Lotion','Face Wash','Lip Balm / Chapstick','After-sun lotion'] },
+    { name:'Hair Care', items:['Shampoo','Conditioner','Dry Shampoo','Hair Ties / Clips','Brush / Comb','Styling Products'] },
+    { name:'Oral & Dental', items:['Toothpaste','Toothbrushes','Floss','Mouthwash','Kids Toothbrush / Paste'] },
+    { name:'Deodorant', items:['Deodorant / Antiperspirant (adults)',"Kids' Deodorant"] },
+    { name:'Feminine Care', items:['Tampons','Pads / Liners','Feminine Wipes','Menstrual Cup / Disc (if needed)'] },
+    { name:'Beauty & Grooming', items:['Razors / Shaving Cream','Nail Polish / Remover','Cotton Rounds / Swabs','Makeup (if needed)','Tweezers / Grooming tools'] },
+  ]},
+  { id:'sams', name:"Sam's Club", icon:'🏢', color:'#60a5fa', subcats:[
+    { name:'Cooking Essentials', items:['Avocado Oil (large)','Coconut Oil (large)','Soy Sauce (large bottle)','White Vinegar (large)','Balsamic Vinegar (large)','Worcestershire Sauce (large)','Pure Vanilla Extract (large)','Minced Garlic (large jar)','Chicken Base / Better Than Bouillon'] },
+  ]},
+  { id:'health', name:'Health & Personal Care', icon:'💊', color:'#c084fc', subcats:[
+    { name:'Health / Medicine', items:['Pain Relievers (Tylenol / Advil)','Kids Pain Reliever','Allergy Medicine','Cold & Flu Medicine','Vitamins / Supplements','Bandages / First Aid','Thermometer (if needed)','Antacids / Tums','Probiotics'] },
+    { name:'Bath & Body', items:['Bar Soap / Body Wash','Hand Soap (refills)','Bath Bombs / Salts (treats)','Loofahs / Bath Sponges'] },
+    { name:'Hair', items:['Shampoo (backup)','Conditioner (backup)','Kids Shampoo / Detangler','Hair Mask / Deep Conditioner'] },
+    { name:'Oral', items:['Electric Toothbrush Heads','Whitening Strips','Orthodontic Wax (if needed)'] },
+    { name:'Grooming', items:['Razors (backup)','Shaving Cream','Nail Clippers / File','Ear / Nose Trimmer (if needed)'] },
+    { name:'Pet Care', items:['Dog / Cat Food','Pet Treats','Flea & Tick Prevention','Pet Shampoo','Waste Bags'] },
+    { name:'Household', items:['Hydrogen Peroxide','Rubbing Alcohol','Cotton Balls / Rounds','Q-Tips (large box)','Disposable Gloves'] },
+  ]},
+];
+
+// ── Storage (must be defined before state is loaded) ───────────────────────
+const _memStore = {};
+const _ls = (() => {
+  try {
+    localStorage.setItem('__test__', '1');
+    localStorage.removeItem('__test__');
+    return localStorage;
+  } catch(e) {
+    return {
+      getItem:    k     => _memStore[k] || null,
+      setItem:    (k,v) => { _memStore[k] = v; },
+      removeItem: k     => { delete _memStore[k]; }
+    };
+  }
+})();
+function loadJ(k, def) { try { const v = _ls.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
+function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
+
+// ── State (loaded after storage is ready) ──────────────────────────────────
+let stores           = loadJ('shopStores',          null) || deepCopy(DEFAULT_STORES);
+let checked          = loadJ('shopChecked',          {});
+let costs            = loadJ('shopCosts',            {});
+let collapsedStores  = loadJ('shopCollapsedStores',  {});
+let collapsedSubcats = loadJ('shopCollapsedSubcats', {});
+let nextStoreIdx     = loadJ('shopNextStoreIdx',     stores.length);
+let excludedStores   = loadJ('shopExcludedStores',  {});
+
+function save() {
+  _ls.setItem('shopStores',          JSON.stringify(stores));
+  _ls.setItem('shopChecked',         JSON.stringify(checked));
+  _ls.setItem('shopCosts',           JSON.stringify(costs));
+  _ls.setItem('shopCollapsedStores', JSON.stringify(collapsedStores));
+  _ls.setItem('shopCollapsedSubcats',JSON.stringify(collapsedSubcats));
+  _ls.setItem('shopNextStoreIdx',    JSON.stringify(nextStoreIdx));
+  _ls.setItem('shopExcludedStores',   JSON.stringify(excludedStores));
+}
+
+// ── Key helpers ────────────────────────────────────────────────────────────
+const ik     = (sid, sc, it) => `${sid}||${sc}||${it}`;
+const scKey  = (sid, sc)     => `${sid}||${sc}`;
+const safeId = s => s.replace(/[^a-z0-9]/gi, '_');
+const escH   = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// ── Totals ─────────────────────────────────────────────────────────────────
+function storeSubtotal(store) {
+  let t = 0;
+  store.subcats.forEach(sc => sc.items.forEach(it => {
+    const key = ik(store.id, sc.name, it);
+    if (!checked[key]) { const v = parseFloat(costs[key]); if (!isNaN(v) && v > 0) t += v; }
+  }));
+  return t;
+}
+
+function updateTotals() {
+  let grand = 0;
+  stores.forEach(store => {
+    const sub = storeSubtotal(store);
+    const excluded = !!excludedStores[store.id];
+    if (!excluded) grand += sub;
+    setTxt(`subtotal-${store.id}`, sub > 0 ? `$${sub.toFixed(2)}` : '');
+    setTxt(`footer-${store.id}`,   `$${sub.toFixed(2)}`);
+    // dim card if excluded
+    const card = document.querySelector(`.store-card[data-id="${store.id}"]`);
+    if (card) card.classList.toggle('store-excluded', excluded);
+    // update toggle btn appearance
+    const tb = document.getElementById(`toggle-total-${store.id}`);
+    if (tb) { tb.textContent = excluded ? '○' : '●'; tb.title = excluded ? 'Excluded from grand total — click to include' : 'Included in grand total — click to exclude'; tb.classList.toggle('excluded', excluded); }
+  });
+  const tax = grand * NJ_TAX;
+  setTxt('grandTotal',   `$${grand.toFixed(2)}`);
+  setTxt('taxAmount',    `$${tax.toFixed(2)}`);
+  setTxt('totalWithTax', `$${(grand + tax).toFixed(2)}`);
+}
+
+function setTxt(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+function toggleExcludeStore(storeId, e) {
+  e.stopPropagation();
+  excludedStores[storeId] = !excludedStores[storeId];
+  if (!excludedStores[storeId]) delete excludedStores[storeId];
+  save();
+  updateTotals();
+}
+
+// ── Store mutations ────────────────────────────────────────────────────────
+function addStore() {
+  const iconEl = document.getElementById('newStoreIcon');
+  const nameEl = document.getElementById('newStoreName');
+  const name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  const icon  = iconEl.value.trim() || '🏪';
+  const color = ACCENT_COLORS[nextStoreIdx % ACCENT_COLORS.length];
+  const id    = 'store_' + Date.now();
+  stores.push({ id, name, icon, color, subcats: [] });
+  nextStoreIdx++;
+  nameEl.value = ''; iconEl.value = '';
+  save(); render();
+}
+
+function deleteStore(storeId) {
+  const card = document.querySelector(`.store-card[data-id="${storeId}"]`);
+  if (!card) return;
+  // Check if already showing confirm UI
+  if (card.querySelector('.confirm-bar')) { card.querySelector('.confirm-bar').remove(); return; }
+  const bar = document.createElement('div');
+  bar.className = 'confirm-bar';
+  bar.innerHTML = `<span class="confirm-msg">Delete this store?</span><button class="confirm-yes" onclick="doDeleteStore('${storeId}')">Yes, delete</button><button class="confirm-no">Cancel</button>`;
+  bar.querySelector('.confirm-no').onclick = () => bar.remove();
+  card.querySelector('.store-header').after(bar);
+}
+function doDeleteStore(storeId) {
+  stores = stores.filter(s => s.id !== storeId);
+  Object.keys(checked).forEach(k => { if (k.startsWith(storeId + '||')) delete checked[k]; });
+  Object.keys(costs).forEach(k =>   { if (k.startsWith(storeId + '||')) delete costs[k]; });
+  save(); render();
+}
+
+function renameStore(storeId, newName, newIcon) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store || !newName.trim()) { render(); return; }
+  store.name = newName.trim();
+  if (newIcon.trim()) store.icon = newIcon.trim();
+  save(); render();
+}
+
+// ── Subcat mutations ───────────────────────────────────────────────────────
+function addSubcat(storeId, scName) {
+  const name = scName.trim();
+  if (!name) return;
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  if (store.subcats.find(sc => sc.name === name)) return;
+  store.subcats.push({ name, items: [] });
+  save(); render();
+}
+
+function deleteSubcat(storeId, scName) {
+  const scId = 'sc-' + safeId(scKey(storeId, scName));
+  const scEl = document.getElementById(scId);
+  if (!scEl) return;
+  if (scEl.querySelector('.confirm-bar')) { scEl.querySelector('.confirm-bar').remove(); return; }
+  const bar = document.createElement('div');
+  bar.className = 'confirm-bar';
+  const escapedSc = scName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const escapedSid = storeId.replace(/'/g,"\\'");
+  bar.innerHTML = '<span class="confirm-msg">Delete this category?</span><button class="confirm-yes">Yes, delete</button><button class="confirm-no">Cancel</button>';
+  bar.querySelector('.confirm-yes').onclick = () => doDeleteSubcat(storeId, scName);
+  bar.querySelector('.confirm-no').onclick  = () => bar.remove();
+  scEl.querySelector('.subcat-header').after(bar);
+}
+function doDeleteSubcat(storeId, scName) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  store.subcats = store.subcats.filter(sc => sc.name !== scName);
+  Object.keys(checked).forEach(k => { if (k.startsWith(scKey(storeId,scName)+'||')) delete checked[k]; });
+  Object.keys(costs).forEach(k =>   { if (k.startsWith(scKey(storeId,scName)+'||')) delete costs[k]; });
+  save(); render();
+}
+
+function renameSubcat(storeId, oldName, newName) {
+  const name = newName.trim();
+  if (!name || name === oldName) { render(); return; }
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  const sc = store.subcats.find(s => s.name === oldName);
+  if (!sc) return;
+  // Migrate keys
+  sc.items.forEach(it => {
+    const oldKey = ik(storeId, oldName, it);
+    const newKey = ik(storeId, name,    it);
+    if (checked[oldKey] !== undefined) { checked[newKey] = checked[oldKey]; delete checked[oldKey]; }
+    if (costs[oldKey]   !== undefined) { costs[newKey]   = costs[oldKey];   delete costs[oldKey]; }
+  });
+  const oldSk = scKey(storeId, oldName);
+  const newSk = scKey(storeId, name);
+  if (collapsedSubcats[oldSk] !== undefined) { collapsedSubcats[newSk] = collapsedSubcats[oldSk]; delete collapsedSubcats[oldSk]; }
+  sc.name = name;
+  save(); render();
+}
+
+// ── Item mutations ─────────────────────────────────────────────────────────
+function findSubcat(storeId, scName) {
+  const store = stores.find(s => s.id === storeId);
+  return store ? store.subcats.find(sc => sc.name === scName) : null;
+}
+
+function addItem(storeId, scName, itemName) {
+  const name = itemName.trim();
+  const sc = findSubcat(storeId, scName);
+  if (!sc || !name || sc.items.includes(name)) return false;
+  sc.items.push(name);
+  save(); render(); return true;
+}
+
+function deleteItem(storeId, scName, itemName) {
+  const sc = findSubcat(storeId, scName);
+  if (!sc) return;
+  sc.items = sc.items.filter(i => i !== itemName);
+  const key = ik(storeId, scName, itemName);
+  delete checked[key]; delete costs[key];
+  save(); render();
+}
+
+function renameItem(storeId, scName, oldName, newName) {
+  const name = newName.trim();
+  const sc = findSubcat(storeId, scName);
+  if (!sc || !name || name === oldName) { render(); return; }
+  const idx = sc.items.indexOf(oldName);
+  if (idx === -1) { render(); return; }
+  sc.items[idx] = name;
+  const oldKey = ik(storeId, scName, oldName);
+  const newKey = ik(storeId, scName, name);
+  if (checked[oldKey] !== undefined) { checked[newKey] = checked[oldKey]; delete checked[oldKey]; }
+  if (costs[oldKey]   !== undefined) { costs[newKey]   = costs[oldKey];   delete costs[oldKey]; }
+  save(); render();
+}
+
+// ── Toggle / interaction ───────────────────────────────────────────────────
+function toggleItem(storeId, scName, itemText) {
+  const key = ik(storeId, scName, itemText);
+  checked[key] = !checked[key];
+  save();
+  const el = document.getElementById(`item-${safeId(key)}`);
+  if (el) el.classList.toggle('checked', !!checked[key]);
+  refreshProgress(storeId);
+  updateTotals();
+}
+
+function refreshProgress(storeId) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  let total = 0, done = 0;
+  store.subcats.forEach(sc => sc.items.forEach(it => { total++; if (checked[ik(store.id, sc.name, it)]) done++; }));
+  setTxt(`count-${storeId}`, `${done}/${total}`);
+  const pb = document.getElementById(`pb-${storeId}`);
+  if (pb) pb.style.width = (total ? Math.round((done/total)*100) : 0) + '%';
+}
+
+function toggleStore(storeId) {
+  collapsedStores[storeId] = !collapsedStores[storeId];
+  save();
+  const card = document.querySelector(`.store-card[data-id="${storeId}"]`);
+  if (card) card.classList.toggle('collapsed');
+}
+
+function toggleSubcat(storeId, scName) {
+  const key = scKey(storeId, scName);
+  collapsedSubcats[key] = !collapsedSubcats[key];
+  save();
+  const el = document.getElementById(`sc-${safeId(key)}`);
+  if (el) el.classList.toggle('collapsed');
+}
+
+function updateCost(input) {
+  const key = input.dataset.key;
+  const num = parseFloat(input.value);
+  if (input.value.trim() === '' || isNaN(num)) delete costs[key];
+  else costs[key] = num;
+  save(); updateTotals();
+}
+
+function askResetAll()   { showConfirm('confirm-checks', 'confirm-costs'); }
+function askResetCosts() { showConfirm('confirm-costs', 'confirm-checks'); }
+function showConfirm(showId, hideId) {
+  const s = document.getElementById(showId);
+  const h = document.getElementById(hideId);
+  if (!s) return;
+  const isVisible = s.style.display !== 'none';
+  if (h) h.style.display = 'none';
+  s.style.display = isVisible ? 'none' : 'flex';
+}
+function hideConfirm(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+function doResetAll()   { checked = {}; save(); hideConfirm('confirm-checks'); render(); }
+function doResetCosts() { costs   = {}; save(); hideConfirm('confirm-costs');  render(); }
+
+// ── Export / Import ────────────────────────────────────────────────────────
+function exportData() {
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    stores, checked, costs, collapsedStores, collapsedSubcats, nextStoreIdx, excludedStores
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const date = new Date().toISOString().slice(0,10);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `shopping-list-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  const fb = document.getElementById('export-feedback');
+  if (fb) { fb.style.display = 'block'; setTimeout(() => fb.style.display = 'none', 2500); }
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const fb = document.getElementById('import-feedback');
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.stores || !Array.isArray(data.stores)) throw new Error('Invalid file');
+      stores           = data.stores;
+      checked          = data.checked          || {};
+      costs            = data.costs            || {};
+      collapsedStores  = data.collapsedStores  || {};
+      collapsedSubcats = data.collapsedSubcats || {};
+      nextStoreIdx     = data.nextStoreIdx     || stores.length;
+      excludedStores   = data.excludedStores   || {};
+      save();
+      render();
+      if (fb) { fb.style.color = '#4ade80'; fb.textContent = '✓ Data imported successfully!'; fb.style.display = 'block'; setTimeout(() => fb.style.display = 'none', 3000); }
+    } catch(err) {
+      if (fb) { fb.style.color = '#f87171'; fb.textContent = '✕ Invalid file — please use an exported shopping list file.'; fb.style.display = 'block'; setTimeout(() => fb.style.display = 'none', 4000); }
+    }
+    input.value = ''; // reset so same file can be re-imported if needed
+  };
+  reader.readAsText(file);
+}
+
+// ── Inline rename helpers ──────────────────────────────────────────────────
+function startItemRename(itemDiv, textSpan, actionsDiv, storeId, scName, oldName) {
+  const inp = document.createElement('input');
+  inp.className = 'item-rename-input';
+  inp.value = oldName;
+  itemDiv.replaceChild(inp, textSpan);
+  inp.focus(); inp.select();
+
+  actionsDiv.innerHTML = '';
+  const saveBtn   = mkBtn('btn-save',   '✓', e => { e.stopPropagation(); renameItem(storeId, scName, oldName, inp.value); });
+  const cancelBtn = mkBtn('btn-cancel', '✕', e => { e.stopPropagation(); render(); });
+  actionsDiv.appendChild(saveBtn); actionsDiv.appendChild(cancelBtn);
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.stopPropagation(); renameItem(storeId, scName, oldName, inp.value); }
+    if (e.key === 'Escape') { e.stopPropagation(); render(); }
+  });
+}
+
+function startSubcatRename(scDiv, nameSpan, actionsDiv, storeId, oldName) {
+  const inp = document.createElement('input');
+  inp.className = 'subcat-name-input';
+  inp.value = oldName;
+  const toggle = scDiv.querySelector('.subcat-header-toggle');
+  toggle.replaceChild(inp, nameSpan);
+  inp.focus(); inp.select();
+
+  actionsDiv.innerHTML = '';
+  const saveBtn   = mkBtn('btn-save',   '✓', e => { e.stopPropagation(); renameSubcat(storeId, oldName, inp.value); });
+  const cancelBtn = mkBtn('btn-cancel', '✕', e => { e.stopPropagation(); render(); });
+  actionsDiv.appendChild(saveBtn); actionsDiv.appendChild(cancelBtn);
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.stopPropagation(); renameSubcat(storeId, oldName, inp.value); }
+    if (e.key === 'Escape') { e.stopPropagation(); render(); }
+  });
+}
+
+function startStoreRename(card, store) {
+  const header = card.querySelector('.store-header');
+
+  // Replace header with edit row
+  const editRow = document.createElement('div');
+  editRow.className = 'store-header-edit';
+
+  const iconInp = document.createElement('input');
+  iconInp.className = 'store-icon-input';
+  iconInp.value = store.icon;
+
+  const nameInp = document.createElement('input');
+  nameInp.className = 'store-name-input';
+  nameInp.value = store.name;
+
+  const saveBtn   = mkBtn('btn-save',   '✓', e => { e.stopPropagation(); renameStore(store.id, nameInp.value, iconInp.value); });
+  const cancelBtn = mkBtn('btn-cancel', '✕', e => { e.stopPropagation(); render(); });
+
+  editRow.appendChild(iconInp);
+  editRow.appendChild(nameInp);
+  editRow.appendChild(saveBtn);
+  editRow.appendChild(cancelBtn);
+
+  card.replaceChild(editRow, header);
+  nameInp.focus(); nameInp.select();
+
+  nameInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.stopPropagation(); renameStore(store.id, nameInp.value, iconInp.value); }
+    if (e.key === 'Escape') { e.stopPropagation(); render(); }
+  });
+}
+
+function mkBtn(cls, text, handler) {
+  const b = document.createElement('button');
+  b.className = `btn-icon ${cls}`;
+  b.textContent = text;
+  b.onclick = handler;
+  return b;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const grid = document.getElementById('storesGrid');
+  grid.innerHTML = '';
+
+  stores.forEach(store => {
+    let total = 0, done = 0;
+    store.subcats.forEach(sc => sc.items.forEach(it => {
+      total++; if (checked[ik(store.id, sc.name, it)]) done++;
+    }));
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const sub = storeSubtotal(store);
+    const color = store.color || ACCENT_COLORS[0];
+    const isCollapsed = collapsedStores[store.id];
+
+    const card = document.createElement('div');
+    card.className = `store-card${isCollapsed ? ' collapsed' : ''}`;
+    card.dataset.id = store.id;
+    if (excludedStores[store.id]) card.classList.add('store-excluded');
+
+    // ── Store header ────────────────────────────────────────────────────
+    const header = document.createElement('div');
+    header.className = 'store-header';
+    header.style.borderLeft = `4px solid ${color}`;
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'store-icon'; iconSpan.textContent = store.icon;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'store-name'; nameSpan.textContent = store.name;
+
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'store-meta';
+    metaSpan.innerHTML = `<span class="store-count" id="count-${store.id}">${done}/${total}</span><span class="store-subtotal" id="subtotal-${store.id}">${sub > 0 ? '$'+sub.toFixed(2) : ''}</span>`;
+
+    // Toggle-from-grand-total button
+    const toggleTotalBtn = document.createElement('button');
+    const isExcluded = !!excludedStores[store.id];
+    toggleTotalBtn.className = 'btn-icon btn-toggle-total' + (isExcluded ? ' excluded' : '');
+    toggleTotalBtn.id = `toggle-total-${store.id}`;
+    toggleTotalBtn.textContent = isExcluded ? '○' : '●';
+    toggleTotalBtn.title = isExcluded ? 'Excluded from grand total — click to include' : 'Included in grand total — click to exclude';
+    toggleTotalBtn.onclick = e => toggleExcludeStore(store.id, e);
+
+    const storeActions = document.createElement('div');
+    storeActions.className = 'item-actions';
+    const renameStoreBtn = mkBtn('btn-rename', '✏️', e => { e.stopPropagation(); startStoreRename(card, store); });
+    const deleteStoreBtn = mkBtn('btn-delete', '🗑', e => { e.stopPropagation(); deleteStore(store.id); });
+    storeActions.appendChild(renameStoreBtn);
+    storeActions.appendChild(deleteStoreBtn);
+
+    const chevron = document.createElement('span');
+    chevron.className = 'store-chevron'; chevron.textContent = '▼';
+
+    header.appendChild(iconSpan);
+    header.appendChild(nameSpan);
+    header.appendChild(metaSpan);
+    header.appendChild(toggleTotalBtn);
+    header.appendChild(storeActions);
+    header.appendChild(chevron);
+    header.addEventListener('click', e => {
+      if (e.target.closest('.item-actions')) return;
+      toggleStore(store.id);
+    });
+
+    // Progress bar
+    const pbWrap = document.createElement('div');
+    pbWrap.className = 'progress-bar-wrap';
+    const pb = document.createElement('div');
+    pb.className = 'progress-bar';
+    pb.id = `pb-${store.id}`;
+    pb.style.background = color;
+    pb.style.width = pct + '%';
+    pbWrap.appendChild(pb);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'store-body';
+    body.id = `body-${store.id}`;
+
+    card.appendChild(header);
+    card.appendChild(pbWrap);
+    card.appendChild(body);
+
+    // ── Subcategories ───────────────────────────────────────────────────
+    store.subcats.forEach(sc => {
+      const sk_ = scKey(store.id, sc.name);
+      const isScCollapsed = !!collapsedSubcats[sk_];
+
+      const scDiv = document.createElement('div');
+      scDiv.className = `subcat${isScCollapsed ? ' collapsed' : ''}`;
+      scDiv.id = `sc-${safeId(sk_)}`;
+
+      // Subcat header
+      const scHeader = document.createElement('div');
+      scHeader.className = 'subcat-header';
+
+      const toggleArea = document.createElement('div');
+      toggleArea.className = 'subcat-header-toggle';
+      toggleArea.addEventListener('click', e => {
+        if (e.target.closest('.item-actions')) return;
+        toggleSubcat(store.id, sc.name);
+      });
+
+      const scChev = document.createElement('span');
+      scChev.className = 'subcat-chevron'; scChev.textContent = '▼';
+
+      const scNameSpan = document.createElement('span');
+      scNameSpan.className = 'subcat-name'; scNameSpan.textContent = sc.name;
+
+      toggleArea.appendChild(scChev);
+      toggleArea.appendChild(scNameSpan);
+
+      const scActions = document.createElement('div');
+      scActions.className = 'item-actions';
+      const renameScBtn = mkBtn('btn-rename', '✏️', e => { e.stopPropagation(); startSubcatRename(scDiv, scNameSpan, scActions, store.id, sc.name); });
+      const deleteScBtn = mkBtn('btn-delete', '🗑', e => { e.stopPropagation(); deleteSubcat(store.id, sc.name); });
+      scActions.appendChild(renameScBtn);
+      scActions.appendChild(deleteScBtn);
+
+      scHeader.appendChild(toggleArea);
+      scHeader.appendChild(scActions);
+      scDiv.appendChild(scHeader);
+
+      // Subcat body (items + add row)
+      const scBody = document.createElement('div');
+      scBody.className = 'subcat-body';
+
+      sc.items.forEach(it => {
+        const key = ik(store.id, sc.name, it);
+        const isChecked = !!checked[key];
+        const costVal = costs[key] !== undefined ? costs[key] : '';
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `item${isChecked ? ' checked' : ''}`;
+        itemDiv.id = `item-${safeId(key)}`;
+
+        const checkDiv = document.createElement('div');
+        checkDiv.className = 'item-check';
+        checkDiv.onclick = () => toggleItem(store.id, sc.name, it);
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'item-text';
+        textSpan.textContent = it;
+        textSpan.onclick = () => toggleItem(store.id, sc.name, it);
+
+        const costWrap = document.createElement('div');
+        costWrap.className = 'cost-wrap';
+        const costSym = document.createElement('span');
+        costSym.className = 'cost-symbol'; costSym.textContent = '$';
+        const costInp = document.createElement('input');
+        costInp.className = 'cost-input'; costInp.type = 'number';
+        costInp.min = '0'; costInp.step = '0.01'; costInp.placeholder = '0.00';
+        if (costVal !== '') costInp.value = costVal;
+        costInp.dataset.key = key;
+        costInp.addEventListener('click', e => e.stopPropagation());
+        costInp.addEventListener('input', () => updateCost(costInp));
+        costWrap.appendChild(costSym); costWrap.appendChild(costInp);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        const renameItemBtn = mkBtn('btn-rename', '✏️', e => { e.stopPropagation(); startItemRename(itemDiv, textSpan, actionsDiv, store.id, sc.name, it); });
+        const deleteItemBtn = mkBtn('btn-delete', '🗑', e => { e.stopPropagation(); deleteItem(store.id, sc.name, it); });
+        actionsDiv.appendChild(renameItemBtn);
+        actionsDiv.appendChild(deleteItemBtn);
+
+        itemDiv.appendChild(checkDiv);
+        itemDiv.appendChild(textSpan);
+        itemDiv.appendChild(costWrap);
+        itemDiv.appendChild(actionsDiv);
+        scBody.appendChild(itemDiv);
+      });
+
+      // Add-item row
+      const addRow = document.createElement('div');
+      addRow.className = 'add-item-row';
+      const addInp = document.createElement('input');
+      addInp.className = 'add-item-input'; addInp.type = 'text'; addInp.placeholder = '+ Add item…';
+      addInp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { if (addItem(store.id, sc.name, addInp.value)) addInp.value = ''; }
+      });
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn-add-confirm'; addBtn.textContent = 'Add';
+      addBtn.onclick = () => { if (addItem(store.id, sc.name, addInp.value)) addInp.value = ''; };
+      addRow.appendChild(addInp); addRow.appendChild(addBtn);
+      scBody.appendChild(addRow);
+
+      scDiv.appendChild(scBody);
+      body.appendChild(scDiv);
+    });
+
+    // Add-subcat row
+    const addScRow = document.createElement('div');
+    addScRow.className = 'add-subcat-row';
+    const addScInp = document.createElement('input');
+    addScInp.className = 'add-subcat-input'; addScInp.type = 'text'; addScInp.placeholder = '+ Add category…';
+    addScInp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { addSubcat(store.id, addScInp.value); addScInp.value = ''; }
+    });
+    const addScBtn = document.createElement('button');
+    addScBtn.className = 'btn-add-confirm'; addScBtn.textContent = 'Add';
+    addScBtn.onclick = () => { addSubcat(store.id, addScInp.value); addScInp.value = ''; };
+    addScRow.appendChild(addScInp); addScRow.appendChild(addScBtn);
+    body.appendChild(addScRow);
+
+    // Store footer subtotal
+    const footer = document.createElement('div');
+    footer.className = 'store-footer';
+    footer.innerHTML = `<div><div class="store-footer-label">Store Total</div><div class="store-footer-note">unchecked items only</div></div><span class="store-footer-amount" id="footer-${store.id}">$${sub.toFixed(2)}</span>`;
+    body.appendChild(footer);
+
+    grid.appendChild(card);
+  });
+
+  updateTotals();
+}
+
+// ── Kick off ───────────────────────────────────────────────────────────────
+// Ensure existing stores without color get one
+stores.forEach((s, i) => { if (!s.color) s.color = ACCENT_COLORS[i % ACCENT_COLORS.length]; });
+
+// Add Enter key for add-store inputs
+document.getElementById('newStoreName').addEventListener('keydown', e => { if (e.key === 'Enter') addStore(); });
+
+render();
+
+
+</script>
+</body>
+</html>
