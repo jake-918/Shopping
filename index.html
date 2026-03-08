@@ -262,11 +262,17 @@
   .store-footer {
     padding: 11px 18px; background: rgba(255,255,255,0.02);
     border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: stretch; justify-content: space-between; gap: 8px;
   }
-  .store-footer-label { font-size: 0.76rem; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.7px; }
-  .store-footer-note  { font-size: 0.68rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
-  .store-footer-amount { font-size: 1rem; font-weight: 900; color: #86efac; }
+  .store-footer-col { display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
+  .store-footer-col:last-child { align-items: flex-end; }
+  .store-footer-label { font-size: 0.72rem; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.7px; }
+  .store-footer-note  { font-size: 0.65rem; color: var(--muted); font-weight: 600; margin-top: 1px; }
+  .store-footer-amount { font-size: 0.95rem; font-weight: 900; color: #86efac; margin-top: 3px; }
+  .store-footer-amount.blue { color: #60a5fa; }
+  .store-footer-tax { font-size: 0.68rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
+  .store-footer-tax.blue { color: rgba(96,165,250,0.7); }
+  .store-footer-divider { width: 1px; background: var(--border); align-self: stretch; flex-shrink: 0; }
 
   /* Add store card */
   .add-store-card {
@@ -399,26 +405,157 @@
     font-size: 0.68rem; font-weight: 800; color: #fb923c;
     white-space: nowrap; text-align: right;
   }
+
+  /* View Cart button on store card */
+  .cart-section {
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    background: rgba(96,165,250,0.04);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .cart-section-info { display: flex; align-items: center; gap: 8px; }
+  .cart-icon { font-size: 1rem; }
+  .cart-badge {
+    font-size: 0.7rem; font-weight: 800; background: rgba(96,165,250,0.2);
+    color: #60a5fa; border-radius: 20px; padding: 2px 9px;
+  }
+  .btn-view-cart {
+    background: rgba(96,165,250,0.15); color: #60a5fa;
+    border: 1px solid rgba(96,165,250,0.3); border-radius: 10px;
+    padding: 7px 16px; font-family: inherit; font-size: 0.8rem; font-weight: 800;
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-view-cart:active { background: rgba(96,165,250,0.3); }
+
+  /* Full-screen cart overlay */
+  .cart-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .cart-overlay.open { transform: translateX(0); }
+
+  .cart-overlay-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: max(16px, env(safe-area-inset-top)) 16px 14px;
+    background: var(--card-bg); border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .cart-back-btn {
+    width: 34px; height: 34px; border-radius: 10px; border: none;
+    background: rgba(255,255,255,0.07); color: var(--text);
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.15s;
+  }
+  .cart-back-btn:active { background: rgba(255,255,255,0.15); }
+  .cart-overlay-title { flex: 1; }
+  .cart-overlay-store { font-size: 1rem; font-weight: 900; color: var(--text); }
+  .cart-overlay-sub { font-size: 0.72rem; color: var(--muted2); font-weight: 600; margin-top: 1px; }
+
+  .cart-overlay-body {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 12px 0;
+  }
+  .cart-overlay-empty {
+    text-align: center; padding: 60px 24px;
+    font-size: 0.9rem; color: var(--muted); font-weight: 700;
+  }
+
+  .cart-overlay-footer {
+    flex-shrink: 0; background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+  }
+  .cart-totals-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .cart-totals-label { font-size: 0.72rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.6px; }
+  .cart-totals-amount { font-size: 0.88rem; font-weight: 900; color: #86efac; }
+  .cart-totals-amount.blue { color: #60a5fa; }
+  .cart-totals-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+  /* Cart items */
+  .cart-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px 8px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: opacity 0.15s;
+  }
+  .cart-item:last-of-type { border-bottom: none; }
+  .cart-item-check {
+    width: 19px; height: 19px; border-radius: 5px; border: 2px solid #3a5f8a;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  .cart-item.cart-grabbed .cart-item-check { border-color: #60a5fa; background: #60a5fa; }
+  .cart-item.cart-grabbed .cart-item-check::after { content: '✓'; color: #0f1117; font-size: 0.65rem; font-weight: 900; }
+  .cart-item-label {
+    flex: 1; font-size: 0.85rem; font-weight: 600; color: var(--text);
+    cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cart-item.cart-grabbed .cart-item-label { text-decoration: line-through; opacity: 0.4; }
+  .cart-item-cost { font-size: 0.78rem; font-weight: 800; color: #60a5fa; flex-shrink: 0; }
+  .cart-item.cart-grabbed .cart-item-cost { opacity: 0.4; }
+
+  /* Finish shopping button */
+  .btn-finish-shopping {
+    width: calc(100% - 32px); margin: 10px 16px 12px;
+    background: rgba(96,165,250,0.15); color: #60a5fa;
+    border: 1px solid rgba(96,165,250,0.3); border-radius: 10px;
+    padding: 10px; font-family: inherit; font-size: 0.85rem; font-weight: 800;
+    cursor: pointer; transition: background 0.15s, color 0.15s; letter-spacing: 0.3px;
+  }
+  .btn-finish-shopping:hover { background: rgba(96,165,250,0.25); }
+  .btn-finish-shopping:active { background: rgba(96,165,250,0.35); }
+
+  /* Cart count badge in store header */
+  .cart-count-badge {
+    font-size: 0.68rem; font-weight: 800; color: #60a5fa;
+    background: rgba(96,165,250,0.12); border-radius: 20px; padding: 1px 7px;
+  }
+
+  /* Checked item on main list = in cart, show with blue tint instead of strikethrough */
+  .item.checked .item-row1 .item-text { text-decoration: none; opacity: 0.5; color: #60a5fa; }
+  .item.checked .item-check { border-color: #60a5fa; background: #60a5fa; }
+  .item.checked .item-check::after { content: '🛒'; font-size: 0.55rem; color: #0f1117; }
+  .item.checked .item-row2 { opacity: 0.4; }
 </style>
 </head>
 <body>
 <div class="content">
   <h1>🛒 Shopping List</h1>
-  <p class="subtitle">Tap to check · ✏️ rename · 🗑 delete · + add anywhere</p>
+  <p class="subtitle">Check to add to cart · ✏️ rename · 🗑 delete · + add anywhere</p>
 
   <div class="grand-total-bar">
     <div class="grand-total-row">
-      <span class="grand-total-label">🧾 Subtotal (unchecked)</span>
-      <span class="grand-total-amount" id="grandTotal">$0.00</span>
+      <span class="grand-total-label">🗒 Planned</span>
+      <span class="grand-total-amount" id="grandPlanned">$0.00</span>
+    </div>
+    <div class="grand-total-row" style="margin-top:2px">
+      <span class="tax-row-label">NJ Tax (6.625%)</span>
+      <span class="tax-row-amount" id="plannedTax">$0.00</span>
+    </div>
+    <div class="grand-total-row" style="margin-top:3px">
+      <span class="total-with-tax-label">Total with Tax</span>
+      <span class="total-with-tax-amount" id="plannedWithTax">$0.00</span>
     </div>
     <hr class="grand-total-divider">
     <div class="grand-total-row">
-      <span class="tax-row-label">NJ Sales Tax (6.625%)</span>
-      <span class="tax-row-amount" id="taxAmount">$0.00</span>
+      <span class="grand-total-label">🛒 In Cart</span>
+      <span class="grand-total-amount" style="color:#60a5fa" id="grandCart">$0.00</span>
     </div>
-    <div class="grand-total-row" style="margin-top:4px">
-      <span class="total-with-tax-label">✅ Total with Tax</span>
-      <span class="total-with-tax-amount" id="totalWithTax">$0.00</span>
+    <div class="grand-total-row" style="margin-top:2px">
+      <span class="tax-row-label">NJ Tax (6.625%)</span>
+      <span class="tax-row-amount" id="cartTax">$0.00</span>
+    </div>
+    <div class="grand-total-row" style="margin-top:3px">
+      <span class="total-with-tax-label" style="color:#60a5fa">Total with Tax</span>
+      <span class="total-with-tax-amount" style="color:#60a5fa" id="cartWithTax">$0.00</span>
     </div>
   </div>
 
@@ -459,9 +596,41 @@
   </div>
 </div>
 
+<!-- Full-screen cart overlay -->
+<div class="cart-overlay" id="cartOverlay">
+  <div class="cart-overlay-header">
+    <button class="cart-back-btn" onclick="closeCart()">‹</button>
+    <div class="cart-overlay-title">
+      <div class="cart-overlay-store" id="cartOverlayStore"></div>
+      <div class="cart-overlay-sub" id="cartOverlaySub"></div>
+    </div>
+  </div>
+  <div class="cart-overlay-body" id="cartOverlayBody"></div>
+  <div class="cart-overlay-footer">
+    <div class="cart-totals-row">
+      <span class="cart-totals-label">🗒 Planned</span>
+      <span class="cart-totals-amount" id="cartOverlayPlanned">$0.00</span>
+    </div>
+    <div class="cart-totals-row">
+      <span class="cart-totals-label" style="color:var(--muted)">with NJ tax</span>
+      <span style="font-size:0.78rem;font-weight:800;color:var(--muted2)" id="cartOverlayPlannedTax">$0.00</span>
+    </div>
+    <hr class="cart-totals-divider">
+    <div class="cart-totals-row">
+      <span class="cart-totals-label" style="color:#60a5fa">🛒 In Cart</span>
+      <span class="cart-totals-amount blue" id="cartOverlayCart">$0.00</span>
+    </div>
+    <div class="cart-totals-row">
+      <span class="cart-totals-label" style="color:var(--muted)">with NJ tax</span>
+      <span style="font-size:0.78rem;font-weight:800;color:rgba(96,165,250,0.7)" id="cartOverlayCartTax">$0.00</span>
+    </div>
+    <button class="btn-finish-shopping" style="margin:10px 0 0;width:100%" id="cartOverlayFinish">✓ Finish Shopping</button>
+  </div>
+</div>
+
 <script>
 const NJ_TAX = 0.06625;
-const VERSION = "1.2.2";
+const VERSION = "1.3.3";
 // Set version footer
 document.addEventListener('DOMContentLoaded', () => {
   const vf = document.getElementById('version-footer');
@@ -553,6 +722,7 @@ let nextStoreIdx     = loadJ('shopNextStoreIdx',     stores.length);
 let excludedStores   = loadJ('shopExcludedStores',  {});
 let ozs              = loadJ('shopOzs',             {});
 let qtys             = loadJ('shopQtys',            {});
+let cartGrabbed      = loadJ('shopCartGrabbed',     {}); // items confirmed grabbed while shopping
 
 function save() {
   _ls.setItem('shopStores',          JSON.stringify(stores));
@@ -564,6 +734,7 @@ function save() {
   _ls.setItem('shopExcludedStores',   JSON.stringify(excludedStores));
   _ls.setItem('shopOzs',              JSON.stringify(ozs));
   _ls.setItem('shopQtys',             JSON.stringify(qtys));
+  _ls.setItem('shopCartGrabbed',      JSON.stringify(cartGrabbed));
 }
 
 // ── Key helpers ────────────────────────────────────────────────────────────
@@ -573,34 +744,53 @@ const safeId = s => s.replace(/[^a-z0-9]/gi, '_');
 const escH   = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 // ── Totals ─────────────────────────────────────────────────────────────────
-function storeSubtotal(store) {
-  let t = 0;
+function itemCost(key) {
+  const v = parseFloat(costs[key]); if (isNaN(v) || v <= 0) return 0;
+  return v * (qtys[key] || 1);
+}
+
+function storeTotals(store) {
+  let planned = 0, inCart = 0;
   store.subcats.forEach(sc => sc.items.forEach(it => {
     const key = ik(store.id, sc.name, it);
-    if (!checked[key]) { const v = parseFloat(costs[key]); if (!isNaN(v) && v > 0) { const q = qtys[key] || 1; t += v * q; } }
+    const c = itemCost(key);
+    if (checked[key])          planned += c;   // in cart (checked on list)
+    if (cartGrabbed[key])      inCart  += c;   // confirmed grabbed
   }));
-  return t;
+  return { planned, inCart };
 }
 
 function updateTotals() {
-  let grand = 0;
+  let grandPlanned = 0, grandCart = 0;
   stores.forEach(store => {
-    const sub = storeSubtotal(store);
+    const { planned, inCart } = storeTotals(store);
     const excluded = !!excludedStores[store.id];
-    if (!excluded) grand += sub;
-    setTxt(`subtotal-${store.id}`, sub > 0 ? `$${sub.toFixed(2)}` : '');
-    setTxt(`footer-${store.id}`,   `$${sub.toFixed(2)}`);
+    if (!excluded) { grandPlanned += planned; grandCart += inCart; }
+    // store header subtotal shows planned spend for this store
+    setTxt(`subtotal-${store.id}`, planned > 0 ? `$${planned.toFixed(2)}` : '');
+    setTxt(`footer-${store.id}`,          `$${planned.toFixed(2)}`);
+    setTxt(`footer-tax-${store.id}`,      `+tax $${(planned + planned * NJ_TAX).toFixed(2)}`);
+    setTxt(`footer-cart-${store.id}`,     `$${inCart.toFixed(2)}`);
+    setTxt(`footer-cart-tax-${store.id}`, `+tax $${(inCart + inCart * NJ_TAX).toFixed(2)}`);
+    // update cart badge
+    const cartCountEl = document.getElementById(`cart-count-${store.id}`);
+    const store_ = stores.find(s => s.id === store.id);
+    const cartItems = store_ ? store_.subcats.flatMap(sc => sc.items.filter(it => checked[ik(store.id, sc.name, it)])) : [];
+    if (cartCountEl) cartCountEl.textContent = cartItems.length > 0 ? `🛒 ${cartItems.length}` : '';
     // dim card if excluded
     const card = document.querySelector(`.store-card[data-id="${store.id}"]`);
     if (card) card.classList.toggle('store-excluded', excluded);
-    // update toggle btn appearance
     const tb = document.getElementById(`toggle-total-${store.id}`);
-    if (tb) { tb.textContent = excluded ? '○' : '●'; tb.title = excluded ? 'Excluded from grand total — click to include' : 'Included in grand total — click to exclude'; tb.classList.toggle('excluded', excluded); }
+    if (tb) { tb.textContent = excluded ? '○' : '●'; tb.classList.toggle('excluded', excluded); }
   });
-  const tax = grand * NJ_TAX;
-  setTxt('grandTotal',   `$${grand.toFixed(2)}`);
-  setTxt('taxAmount',    `$${tax.toFixed(2)}`);
-  setTxt('totalWithTax', `$${(grand + tax).toFixed(2)}`);
+  const pTax = grandPlanned * NJ_TAX;
+  const cTax = grandCart    * NJ_TAX;
+  setTxt('grandPlanned',  `$${grandPlanned.toFixed(2)}`);
+  setTxt('plannedTax',    `$${pTax.toFixed(2)}`);
+  setTxt('plannedWithTax',`$${(grandPlanned + pTax).toFixed(2)}`);
+  setTxt('grandCart',     `$${grandCart.toFixed(2)}`);
+  setTxt('cartTax',       `$${cTax.toFixed(2)}`);
+  setTxt('cartWithTax',   `$${(grandCart + cTax).toFixed(2)}`);
 }
 
 function setTxt(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
@@ -645,6 +835,7 @@ function doDeleteStore(storeId) {
   Object.keys(costs).forEach(k =>   { if (k.startsWith(storeId + '||')) delete costs[k]; });
   Object.keys(ozs).forEach(k =>     { if (k.startsWith(storeId + '||')) delete ozs[k]; });
   Object.keys(qtys).forEach(k =>    { if (k.startsWith(storeId + '||')) delete qtys[k]; });
+  Object.keys(cartGrabbed).forEach(k => { if (k.startsWith(storeId + '||')) delete cartGrabbed[k]; });
   save(); render();
 }
 
@@ -689,6 +880,7 @@ function doDeleteSubcat(storeId, scName) {
   Object.keys(costs).forEach(k =>   { if (k.startsWith(scKey(storeId,scName)+'||')) delete costs[k]; });
   Object.keys(ozs).forEach(k =>     { if (k.startsWith(scKey(storeId,scName)+'||')) delete ozs[k]; });
   Object.keys(qtys).forEach(k =>    { if (k.startsWith(scKey(storeId,scName)+'||')) delete qtys[k]; });
+  Object.keys(cartGrabbed).forEach(k => { if (k.startsWith(scKey(storeId,scName)+'||')) delete cartGrabbed[k]; });
   save(); render();
 }
 
@@ -732,7 +924,7 @@ function deleteItem(storeId, scName, itemName) {
   if (!sc) return;
   sc.items = sc.items.filter(i => i !== itemName);
   const key = ik(storeId, scName, itemName);
-  delete checked[key]; delete costs[key]; delete ozs[key]; delete qtys[key];
+  delete checked[key]; delete costs[key]; delete ozs[key]; delete qtys[key]; delete cartGrabbed[key];
   save(); render();
 }
 
@@ -754,21 +946,178 @@ function renameItem(storeId, scName, oldName, newName) {
 function toggleItem(storeId, scName, itemText) {
   const key = ik(storeId, scName, itemText);
   checked[key] = !checked[key];
+  if (!checked[key]) delete cartGrabbed[key]; // remove from cart if unchecked from list
   save();
   const el = document.getElementById(`item-${safeId(key)}`);
   if (el) el.classList.toggle('checked', !!checked[key]);
   refreshProgress(storeId);
+  refreshCart(storeId);
   updateTotals();
+}
+
+function toggleCartGrabbed(storeId, scName, itemText) {
+  const key = ik(storeId, scName, itemText);
+  cartGrabbed[key] = !cartGrabbed[key];
+  if (!cartGrabbed[key]) delete cartGrabbed[key];
+  save();
+  const el = document.getElementById(`cart-item-${safeId(key)}`);
+  if (el) el.classList.toggle('cart-grabbed', !!cartGrabbed[key]);
+  updateTotals();
+}
+
+function finishShopping(storeId) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  store.subcats.forEach(sc => sc.items.forEach(it => {
+    const key = ik(storeId, sc.name, it);
+    if (checked[key]) { delete checked[key]; delete cartGrabbed[key]; }
+  }));
+  save();
+  closeCart();
+  render();
+}
+
+// ── Cart overlay ───────────────────────────────────────────────────────────
+let currentCartStoreId = null;
+
+function openCart(storeId) {
+  currentCartStoreId = storeId;
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  const overlay = document.getElementById('cartOverlay');
+  document.getElementById('cartOverlayStore').textContent = store.icon + ' ' + store.name;
+  document.getElementById('cartOverlayFinish').onclick = () => finishShopping(storeId);
+  renderCartOverlay(storeId);
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentCartStoreId = null;
+}
+
+function renderCartOverlay(storeId) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  const body = document.getElementById('cartOverlayBody');
+  const cartItems = store.subcats.flatMap(sc =>
+    sc.items.filter(it => checked[ik(storeId, sc.name, it)]).map(it => ({ sc: sc.name, it }))
+  );
+
+  // Update sub-header count
+  const subEl = document.getElementById('cartOverlaySub');
+  if (subEl) subEl.textContent = `${cartItems.length} item${cartItems.length !== 1 ? 's' : ''} in cart`;
+
+  if (cartItems.length === 0) {
+    body.innerHTML = '<div class="cart-overlay-empty">Your cart is empty.<br>Check items on the list to add them.</div>';
+    return;
+  }
+
+  body.innerHTML = '';
+  // Group by subcategory
+  const bySubcat = {};
+  cartItems.forEach(({ sc, it }) => { if (!bySubcat[sc]) bySubcat[sc] = []; bySubcat[sc].push(it); });
+
+  Object.entries(bySubcat).forEach(([sc, items]) => {
+    const scHeader = document.createElement('div');
+    scHeader.style.cssText = 'padding:8px 16px 4px;font-size:0.68rem;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:0.8px;';
+    scHeader.textContent = sc;
+    body.appendChild(scHeader);
+
+    items.forEach(it => {
+      const key = ik(storeId, sc, it);
+      const isGrabbed = !!cartGrabbed[key];
+      const row = document.createElement('div');
+      row.className = 'cart-item' + (isGrabbed ? ' cart-grabbed' : '');
+      row.id = `cart-item-${safeId(key)}`;
+
+      const chk = document.createElement('div');
+      chk.className = 'cart-item-check';
+      chk.onclick = () => { toggleCartGrabbed(storeId, sc, it); updateCartOverlayTotals(storeId); };
+
+      const lbl = document.createElement('span');
+      lbl.className = 'cart-item-label';
+      lbl.textContent = it;
+      lbl.onclick = () => { toggleCartGrabbed(storeId, sc, it); updateCartOverlayTotals(storeId); };
+
+      const qty = qtys[key] || 1;
+      const costVal = costs[key];
+      const costLbl = document.createElement('span');
+      costLbl.className = 'cart-item-cost';
+      if (costVal > 0) {
+        costLbl.innerHTML = qty > 1
+          ? `<span style="opacity:0.6;font-size:0.7rem">$${costVal.toFixed(2)} × ${qty}</span><br>$${(costVal * qty).toFixed(2)}`
+          : `$${costVal.toFixed(2)}`;
+      }
+
+      row.appendChild(chk); row.appendChild(lbl); row.appendChild(costLbl);
+      body.appendChild(row);
+    });
+  });
+
+  updateCartOverlayTotals(storeId);
+}
+
+function updateCartOverlayTotals(storeId) {
+  const { planned, inCart } = storeTotals(stores.find(s => s.id === storeId) || { subcats: [] });
+  const pTax = planned * NJ_TAX;
+  const cTax = inCart  * NJ_TAX;
+  setTxt('cartOverlayPlanned',    `$${planned.toFixed(2)}`);
+  setTxt('cartOverlayPlannedTax', `$${(planned + pTax).toFixed(2)}`);
+  setTxt('cartOverlayCart',       `$${inCart.toFixed(2)}`);
+  setTxt('cartOverlayCartTax',    `$${(inCart + cTax).toFixed(2)}`);
+}
+
+function refreshCart(storeId) {
+  const store = stores.find(s => s.id === storeId);
+  if (!store) return;
+  const cartSection = document.getElementById(`cart-section-${storeId}`);
+  if (!cartSection) return;
+  const cartItems = [];
+  store.subcats.forEach(sc => sc.items.forEach(it => {
+    if (checked[ik(store.id, sc.name, it)]) cartItems.push({ sc: sc.name, it });
+  }));
+  // update badge
+  const cartCountEl = document.getElementById(`cart-count-${storeId}`);
+  if (cartCountEl) cartCountEl.textContent = cartItems.length > 0 ? `🛒 ${cartItems.length}` : '';
+  // update visibility
+  cartSection.style.display = cartItems.length > 0 ? '' : 'none';
+  // rebuild cart list
+  const cartList = document.getElementById(`cart-list-${storeId}`);
+  if (!cartList) return;
+  cartList.innerHTML = '';
+  cartItems.forEach(({ sc, it }) => {
+    const key = ik(storeId, sc, it);
+    const isGrabbed = !!cartGrabbed[key];
+    const row = document.createElement('div');
+    row.className = 'cart-item' + (isGrabbed ? ' cart-grabbed' : '');
+    row.id = `cart-item-${safeId(key)}`;
+    const chk = document.createElement('div');
+    chk.className = 'cart-item-check';
+    chk.onclick = () => toggleCartGrabbed(storeId, sc, it);
+    const lbl = document.createElement('span');
+    lbl.className = 'cart-item-label';
+    lbl.textContent = it;
+    lbl.onclick = () => toggleCartGrabbed(storeId, sc, it);
+    const cost = itemCost(key);
+    const costLbl = document.createElement('span');
+    costLbl.className = 'cart-item-cost';
+    costLbl.textContent = cost > 0 ? `$${cost.toFixed(2)}` : '';
+    row.appendChild(chk); row.appendChild(lbl); row.appendChild(costLbl);
+    cartList.appendChild(row);
+  });
 }
 
 function refreshProgress(storeId) {
   const store = stores.find(s => s.id === storeId);
   if (!store) return;
-  let total = 0, done = 0;
-  store.subcats.forEach(sc => sc.items.forEach(it => { total++; if (checked[ik(store.id, sc.name, it)]) done++; }));
-  setTxt(`count-${storeId}`, `${done}/${total}`);
+  let total = 0, inCart = 0;
+  store.subcats.forEach(sc => sc.items.forEach(it => { total++; if (checked[ik(store.id, sc.name, it)]) inCart++; }));
+  setTxt(`count-${storeId}`, `${inCart}/${total}`);
   const pb = document.getElementById(`pb-${storeId}`);
-  if (pb) pb.style.width = (total ? Math.round((done/total)*100) : 0) + '%';
+  if (pb) pb.style.width = (total ? Math.round((inCart/total)*100) : 0) + '%';
 }
 
 function toggleStore(storeId) {
@@ -885,7 +1234,7 @@ function exportData() {
   const data = {
     version: 1,
     exported: new Date().toISOString(),
-    stores, checked, costs, collapsedStores, collapsedSubcats, nextStoreIdx, excludedStores, ozs, qtys
+    stores, checked, costs, collapsedStores, collapsedSubcats, nextStoreIdx, excludedStores, ozs, qtys, cartGrabbed
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -918,6 +1267,7 @@ function importData(input) {
       excludedStores   = data.excludedStores   || {};
       ozs              = data.ozs              || {};
       qtys             = data.qtys             || {};
+      cartGrabbed      = data.cartGrabbed      || {};
       save();
       render();
       if (fb) { fb.style.color = '#4ade80'; fb.textContent = '✓ Data imported successfully!'; fb.style.display = 'block'; setTimeout(() => fb.style.display = 'none', 3000); }
@@ -1014,12 +1364,12 @@ function render() {
   grid.innerHTML = '';
 
   stores.forEach(store => {
-    let total = 0, done = 0;
+    let total = 0, inCart = 0;
     store.subcats.forEach(sc => sc.items.forEach(it => {
-      total++; if (checked[ik(store.id, sc.name, it)]) done++;
+      total++; if (checked[ik(store.id, sc.name, it)]) inCart++;
     }));
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    const sub = storeSubtotal(store);
+    const pct = total ? Math.round((inCart / total) * 100) : 0;
+    const { planned, inCart: cartSpend } = storeTotals(store);
     const color = store.color || ACCENT_COLORS[0];
     const isCollapsed = collapsedStores[store.id];
 
@@ -1041,7 +1391,7 @@ function render() {
 
     const metaSpan = document.createElement('span');
     metaSpan.className = 'store-meta';
-    metaSpan.innerHTML = `<span class="store-count" id="count-${store.id}">${done}/${total}</span><span class="store-subtotal" id="subtotal-${store.id}">${sub > 0 ? '$'+sub.toFixed(2) : ''}</span>`;
+    metaSpan.innerHTML = `<span class="store-count" id="count-${store.id}">${inCart}/${total}</span><span class="cart-count-badge" id="cart-count-${store.id}">${inCart > 0 ? '🛒 '+inCart : ''}</span><span class="store-subtotal" id="subtotal-${store.id}">${planned > 0 ? '$'+planned.toFixed(2) : ''}</span>`;
 
     // Toggle-from-grand-total button
     const toggleTotalBtn = document.createElement('button');
@@ -1291,10 +1641,45 @@ function render() {
     addScRow.appendChild(addScInp); addScRow.appendChild(addScBtn);
     body.appendChild(addScRow);
 
+    // ── Cart section — View Cart button ─────────────────────────────────────
+    const cartItemCount = store.subcats.flatMap(sc => sc.items.filter(it => checked[ik(store.id, sc.name, it)])).length;
+    const cartSection = document.createElement('div');
+    cartSection.className = 'cart-section';
+    cartSection.id = `cart-section-${store.id}`;
+    cartSection.style.display = cartItemCount > 0 ? '' : 'none';
+
+    const cartSectionInfo = document.createElement('div');
+    cartSectionInfo.className = 'cart-section-info';
+    cartSectionInfo.innerHTML = `<span class="cart-icon">🛒</span><span class="cart-badge">${cartItemCount} item${cartItemCount !== 1 ? 's' : ''}</span>`;
+
+    const viewCartBtn = document.createElement('button');
+    viewCartBtn.className = 'btn-view-cart';
+    viewCartBtn.textContent = 'View Cart';
+    viewCartBtn.onclick = () => openCart(store.id);
+
+    cartSection.appendChild(cartSectionInfo);
+    cartSection.appendChild(viewCartBtn);
+    body.appendChild(cartSection);
+
     // Store footer subtotal
     const footer = document.createElement('div');
     footer.className = 'store-footer';
-    footer.innerHTML = `<div><div class="store-footer-label">Store Total</div><div class="store-footer-note">unchecked items only</div></div><span class="store-footer-amount" id="footer-${store.id}">$${sub.toFixed(2)}</span>`;
+    const pTax = planned * NJ_TAX;
+    const cTax = cartSpend * NJ_TAX;
+    footer.innerHTML = `
+      <div class="store-footer-col">
+        <div class="store-footer-label">Planned</div>
+        <div class="store-footer-note">cart items</div>
+        <div class="store-footer-amount" id="footer-${store.id}">$${planned.toFixed(2)}</div>
+        <div class="store-footer-tax" id="footer-tax-${store.id}">+tax $${(planned + pTax).toFixed(2)}</div>
+      </div>
+      <div class="store-footer-divider"></div>
+      <div class="store-footer-col">
+        <div class="store-footer-label" style="color:#60a5fa">In Cart</div>
+        <div class="store-footer-note">grabbed</div>
+        <div class="store-footer-amount blue" id="footer-cart-${store.id}">$${cartSpend.toFixed(2)}</div>
+        <div class="store-footer-tax blue" id="footer-cart-tax-${store.id}">+tax $${(cartSpend + cTax).toFixed(2)}</div>
+      </div>`;
     body.appendChild(footer);
 
     grid.appendChild(card);
